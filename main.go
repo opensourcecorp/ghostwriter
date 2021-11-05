@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"flag"
-	"fmt"
 	"io/fs"
 	"log"
 	"os"
@@ -16,17 +15,15 @@ import (
 )
 
 var configFile = flag.String("config-file", "ghostwriter.yaml", "ghostwriter config file")
-var recursive = flag.Bool("recurse", true, "whether to recurse into directories to find templates")
 var templateSuffix = flag.String("template-suffix", ".gw", "suffix used to discover ghostwriter templates")
 var addToGitignore = flag.Bool("gitignore", false, "whether to add output directory to the repo's gitignore")
-var inputPath = flag.String("input", ".", "input directory path")
-var outputPath = flag.String("output", "rendered", "root of output directory")
+var inputPath = flag.String("input-dir", ".", "input directory path")
+var outputPath = flag.String("output-dir", "gw-rendered", "root of output directory")
 
 type cliConfig struct {
 	configFile     string
-	recursive      bool
-	templateSuffix string
-	addToGitignore bool
+	templateSuffix string // TODO: not currently used
+	addToGitignore bool   // TODO: not currently used
 	inputPath      string
 	outputPath     string
 }
@@ -43,7 +40,7 @@ func filterIgnoredFiles(files []fileData, gwIgnoreFile string) []fileData {
 
 	gwIgnoreRaw, err := os.ReadFile(gwIgnoreFile)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
 	// Cleaning up newline-delimited files seems to be kind of gross in Go;
@@ -69,31 +66,31 @@ func filterIgnoredFiles(files []fileData, gwIgnoreFile string) []fileData {
 	return filesOut
 }
 
-// Variadic notation on gwIgnoreFile is an ugly hack to allow for a "default"
+// Variadic notation on gwIgnoreFileOptional is an ugly hack to allow for a "default"
 // arg value, so we can run tests
-func getFiles(root string, gwIgnoreFile ...string) []fileData {
+func getFiles(root string, cliConfigForIgnoring cliConfig, gwIgnoreFileOptional ...string) []fileData {
 	var files []fileData
 
 	// This is such an ugly way to walk directories and get the files
 	// (filepath.Glob doesn't recurse deep enough), but... Go things
 	err := filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
-			log.Fatal(err)
+			panic(err)
 		}
 
 		// path, err = filepath.Rel(root, path)
 		// if err != nil {
-		// 	log.Fatal(err)
+		// 	panic(err)
 		// }
 
-		// Skip .git directories
-		if filepath.Base(path) == ".git" {
+		// Skip .git, and already-rendered directories
+		if filepath.Base(path) == ".git" || filepath.Base(path) == cliConfigForIgnoring.outputPath {
 			return filepath.SkipDir
 		}
 
 		fileInfo, err := os.Stat(path)
 		if err != nil {
-			log.Fatal(err)
+			panic(err)
 		}
 
 		// Strip off the root path (so we can ultimately write uncluttered to
@@ -102,25 +99,26 @@ func getFiles(root string, gwIgnoreFile ...string) []fileData {
 			Path: strings.Replace(path, root+"/", "", 1),
 			Mode: fileInfo.Mode(),
 		}
-		// Only return files, not directories
-		if !fileInfo.IsDir() {
+		// Only return files, not directories; and also do a weak skip of the
+		// config file
+		if !fileInfo.IsDir() && filepath.Base(file.Path) != filepath.Base(cliConfigForIgnoring.configFile) {
 			files = append(files, file)
 		}
 		return nil
 	})
 
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
 	// Aaand here's the hack
-	var gwIgnoreFile_ string
-	if len(gwIgnoreFile) == 0 {
-		gwIgnoreFile_ = ".gwignore"
+	var gwIgnoreFile string
+	if len(gwIgnoreFileOptional) == 0 {
+		gwIgnoreFile = ".gwignore"
 	} else {
-		gwIgnoreFile_ = gwIgnoreFile[0]
+		gwIgnoreFile = gwIgnoreFileOptional[0]
 	}
-	files = filterIgnoredFiles(files, gwIgnoreFile_)
+	files = filterIgnoredFiles(files, gwIgnoreFile)
 
 	return files
 }
@@ -128,23 +126,24 @@ func getFiles(root string, gwIgnoreFile ...string) []fileData {
 func getGWConfig(configPath string) gwConfig {
 	gwConfigRaw, err := os.ReadFile(configPath)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
 	var gwConfig gwConfig
 	err = yaml.Unmarshal(gwConfigRaw, &gwConfig)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
 	return gwConfig
 }
 
-func render(tplText string, gwConfig gwConfig) string {
+// filePath is just used to include better error info
+func render(tplText string, gwConfig gwConfig, filePath string) string {
 	tpl, err := template.New("tpl").Parse(tplText)
 	if err != nil {
-		log.Fatalf("Couldn't process this string for some reason:\n%s\n", tplText)
-		log.Fatal(err)
+		log.Fatalf("Couldn't process file '%s' for some reason; bad template formatting?\n:%s\n", filePath, tplText)
+		panic(err)
 	}
 
 	// If you want to return this as a string vs. rendering straight to a file
@@ -154,20 +153,31 @@ func render(tplText string, gwConfig gwConfig) string {
 	var rendered bytes.Buffer
 	err = tpl.Execute(&rendered, gwConfig)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 	return rendered.String()
 }
 
-func writeRendered(rendered string, path string, mode fs.FileMode) {
-	os.WriteFile(path, []byte(rendered), mode)
+func writeRendered(rendered string, cliConfig cliConfig, file fileData) {
+	outDir := filepath.Join(cliConfig.outputPath, filepath.Dir(file.Path))
+	err := os.MkdirAll(outDir, 0755)
+	if err != nil {
+		panic(err)
+	}
+	err = os.WriteFile(
+		filepath.Join(cliConfig.outputPath, file.Path),
+		[]byte(rendered),
+		file.Mode,
+	)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func main() {
 	flag.Parse()
 	var cliConfig = cliConfig{
 		*configFile,
-		*recursive,
 		*templateSuffix,
 		*addToGitignore,
 		*inputPath,
@@ -175,24 +185,18 @@ func main() {
 	}
 
 	gwConfig := getGWConfig(cliConfig.configFile)
-	fmt.Println(gwConfig)
 
-	files := getFiles(cliConfig.inputPath)
+	files := getFiles(cliConfig.inputPath, cliConfig)
+
 	for _, file := range files {
-		fmt.Println(file.Path)
-	}
-
-	var rendered string
-	for i, file := range files {
-		tplText, err := os.ReadFile(file.Path)
+		tplText, err := os.ReadFile(filepath.Join(cliConfig.inputPath, file.Path))
 		if err != nil {
-			log.Fatal(err)
+			panic(err)
 		}
-		rendered = render(string(tplText), gwConfig)
-		writeRendered(rendered, filepath.Join(cliConfig.outputPath, file.Path), file.Mode)
-		if i == 0 {
-			break
-		}
+		writeRendered(
+			render(string(tplText), gwConfig, file.Path),
+			cliConfig,
+			file,
+		)
 	}
-	// fmt.Println(rendered)
 }
