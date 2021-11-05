@@ -22,7 +22,7 @@ var addToGitignore = flag.Bool("gitignore", false, "whether to add output direct
 var inputPath = flag.String("input", ".", "input directory path")
 var outputPath = flag.String("output", "rendered", "root of output directory")
 
-type CLIConfig struct {
+type cliConfig struct {
 	configFile     string
 	recursive      bool
 	templateSuffix string
@@ -165,7 +165,7 @@ func writeRendered(rendered string, path string, mode fs.FileMode) {
 
 func main() {
 	flag.Parse()
-	var cliConfig = CLIConfig{
+	var cliConfig = cliConfig{
 		*configFile,
 		*recursive,
 		*templateSuffix,
