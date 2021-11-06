@@ -6,8 +6,9 @@
 [![Support OpenSourceCorp on Ko-Fi!](https://img.shields.io/badge/Ko--fi-F16061?style=for-the-badge&logo=ko-fi&logoColor=white)](https://ko-fi.com/ryapric)
 <!-- badges: end -->
 
-Generate code, config, IaC, dependency files and more from template files -- all using a single
-master config file.
+Generate code, config, IaC, dependency files and more from template files -- all
+using a single master config file & [Go text
+templates](https://pkg.go.dev/text/template).
 
 Similar in spirit to [HasiCorp Consul
 Template](https://github.com/hashicorp/consul-template), but does not rely on
@@ -44,15 +45,25 @@ with a directory tree that looks like this:
 
     .
     |- ghostwriter.yaml
+    |- some
+    |- files
+    |- to
+    |- render
 
-`ghostwriter` defaults to writing out its templated files to the same directory
-that it found a template in, with the correct file extension. You may also
-specify the output directory for all rendered templates with the `-o` switch to
-have it write to another directory. For example, if all your templates live in a
-top-leve folder called `ghostwriter-templates`, and you want to have the results
-populate your root directory tree, the following will accomplish that:
+then calling `ghostwrite` from the root will result in the following tree,
+having rendered your templates in-flight:
 
-    ghostwrite -c ghostwriter.yaml -r -o . ghostwriter-templates/
+    .
+    |- ghostwriter.yaml
+    |- some
+    |- files
+    |- to
+    |- render
+    |- gw-rendered/
+    |-   some
+    |-   files
+    |-   to
+    |-   render
 
 ### CLI Options
 

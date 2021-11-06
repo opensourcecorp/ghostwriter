@@ -36,7 +36,7 @@ package: xbuild
 	@cd build || exit 1; \
 	for built in * ; do \
 	printf "Packaging for %s into dist/ ...\n" "$${built}" ; \
-	cd $${built} && tar -czf ../../dist/$${built}.tar.gz * && cd - >/dev/null ; \
+	cd $${built} && tar -czf ../../dist/$(PKGNAME)_$${built}.tar.gz * && cd - >/dev/null ; \
 	done
 
 .PHONY: clean
