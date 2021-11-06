@@ -21,8 +21,10 @@ without the trailing "r"), and can be easily installed a number of ways.
 
 ### Download Releases
 
-The easiest way to get `ghostwriter` is to download from the releases page, and
-extract it to somewhere on your `PATH`.
+The easiest way to get `ghostwriter` is to download the latest release from the
+[Releases page](https://github.com/opensourcecorp/ghostwriter/releases), and
+extract the `ghostwrite` binary to somewhere on your `PATH`, e.g.
+`/usr/local/bin`.
 
 ### Install from Source
 
@@ -37,49 +39,56 @@ file has data in it, you just need to run:
 
     ghostwrite
 
-from the directory that you want to render templates in. That's it!
+from the directory that you want to render templates from. That's it!
 
 Files are written out with the same name the same as their input file, just in
 your output directory instead. So for example, assuming the default behavior and
 with a directory tree that looks like this:
 
     .
-    |- ghostwriter.yaml
-    |- some
-    |- files
-    |- to
-    |- render
+    |-- ghostwriter.yaml
+    |-- some
+    |-- files
+    |-- to
+    |-- render
 
 then calling `ghostwrite` from the root will result in the following tree,
 having rendered your templates in-flight:
 
     .
-    |- ghostwriter.yaml
-    |- some
-    |- files
-    |- to
-    |- render
-    |- gw-rendered/
-    |-   some
-    |-   files
-    |-   to
-    |-   render
+    |-- ghostwriter.yaml
+    |-- some
+    |-- files
+    |-- to
+    |-- render
+    |-- gw-rendered/
+        |-- some
+        |-- files
+        |-- to
+        |-- render
 
 ### CLI Options
 
 The `ghostwrite` CLI supports the following flags:
 
 - `-config-file`: The config file containing your render data. Default:
-  `./ghostwriter.yaml`
+  `ghostwriter.yaml`
 
 - `-input-dir`: The input directory to render templates from. Default: `.`
 
 - `-output-dir`: The output directory where the rendered tree will be
-  reconstructed. Default: `./gw-rendered`
+  reconstructed. Default: `gw-rendered`
 
 ### The .gwignore file
 
-You can use regular expressions.
+Using entries in a file at your directory root called `.gwignore`, you can use
+regular expressions to exclude certain path patterns from `ghostwrite`'s
+rendering. For example, to ignore all paths containing `secret`, you can put a
+line containing `secret` into the `.gwignore`. If you want to be sure to ignore
+***any*** path containing "secret" at all, you can instead put `.*secret.*`.
+Note that these are ***regular expressions, not shell globs*** such as you might
+find in a `.gitignore` (i.e. they're processed by [Go's regexp
+package](https://pkg.go.dev/regexp)).
 
 ## Roadmap Notes
 
