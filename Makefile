@@ -16,10 +16,10 @@ build: clean
 .PHONY: xbuild
 xbuild: clean
 	@for target in \
+		darwin-amd64 \
 		linux-amd64 \
 		linux-arm \
 		linux-arm64 \
-		darwin-amd64 \
 		windows-amd64 \
 	; do \
 		GOOS=$$(echo "$${target}" | cut -d'-' -f1) ; \
