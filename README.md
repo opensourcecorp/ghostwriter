@@ -6,13 +6,13 @@
 [![Support OpenSourceCorp on Ko-Fi!](https://img.shields.io/badge/Ko--fi-F16061?style=for-the-badge&logo=ko-fi&logoColor=white)](https://ko-fi.com/ryapric)
 <!-- badges: end -->
 
-Generate code, config, IaC, dependency files and more from template files -- all
-using a single master config file & [Go text
+Ghostwriter is a CLI utility to generate code, configuration, IaC, dependency
+files, and more from template files -- all using a single config file & [Go text
 templates](https://pkg.go.dev/text/template).
 
-Similar in spirit to [HasiCorp Consul
+Similar in spirit to [HashiCorp Consul
 Template](https://github.com/hashicorp/consul-template), but does not rely on
-another service to manage the config values for you.
+another service running to manage the config values & rendering for you.
 
 ## Installation
 
@@ -28,9 +28,13 @@ extract the `ghostwrite` binary to somewhere on your `PATH`, e.g.
 
 ### Install from Source
 
-If you have a working Go installation, you can install with `go` itself:
+If you have a working Go 1.17+ environment, you can install with `go` itself:
 
-    go install github.com/opensourcecorp/ghostwriter@<latest|vX>
+    go install github.com/opensourcecorp/ghostwriter@<latest|vX.Y.Z>
+
+Note that installing this way will name your binary `ghostwriter` to match the
+package name, and NOT `ghostwrite` as the packaging process specifies. You can
+either rename it, symlink it, or just call the binary as-is.
 
 ## Usage
 

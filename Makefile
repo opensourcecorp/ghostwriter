@@ -21,7 +21,8 @@ xbuild: clean
 		linux-arm \
 		linux-arm64 \
 		windows-amd64 \
-	; do \
+	; \
+	do \
 		GOOS=$$(echo "$${target}" | cut -d'-' -f1) ; \
 		GOARCH=$$(echo "$${target}" | cut -d'-' -f2) ; \
 		outdir=build/"$${GOOS}-$${GOARCH}" ; \
@@ -35,8 +36,8 @@ package: xbuild
 	@mkdir -p dist
 	@cd build || exit 1; \
 	for built in * ; do \
-	printf "Packaging for %s into dist/ ...\n" "$${built}" ; \
-	cd $${built} && tar -czf ../../dist/$(PKGNAME)_$${built}.tar.gz * && cd - >/dev/null ; \
+		printf 'Packaging for %s into dist/ ...\n' "$${built}" ; \
+		cd $${built} && tar -czf ../../dist/$(PKGNAME)_$${built}.tar.gz * && cd - >/dev/null ; \
 	done
 
 .PHONY: clean
@@ -44,4 +45,5 @@ clean:
 	@rm -rf \
 		/tmp/ghostwriter-tests \
 		build/ \
-		dist/
+		dist/ \
+		gw-rendered/
