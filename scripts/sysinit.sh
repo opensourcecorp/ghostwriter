@@ -5,5 +5,6 @@ set -euo pipefail
 # this stuff should go in a Containerfile
 apt-get update
 apt-get install -y \
-  make \
-  golang
+  ca-certificates \
+  golang \
+  make
