@@ -2,7 +2,6 @@
 set -euo pipefail
 
 goversion='1.17.5'
-export PATH="/usr/local/go/bin:${PATH}"
 
 # Using this as a temp fix for not having our own OCI image registry;
 # this stuff should go in a Containerfile
@@ -15,4 +14,5 @@ apt-get install -y \
 
 curl -fsSL -o /tmp/go"${goversion}".tar.gz https://golang.org/dl/go"${goversion}".linux-amd64.tar.gz
 tar -C /usr/local -xzf /tmp/go"${goversion}".tar.gz
+ln -fs /usr/local/go/bin/go /usr/local/bin/go
 go version
