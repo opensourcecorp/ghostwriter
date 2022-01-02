@@ -2,6 +2,7 @@
 set -euo pipefail
 
 goversion='1.17.5'
+export PATH="/usr/local/go/bin:${PATH}"
 
 # Using this as a temp fix for not having our own OCI image registry;
 # this stuff should go in a Containerfile
