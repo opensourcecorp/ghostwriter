@@ -9,7 +9,7 @@ on:
       - '**'
 
 jobs:
-  ghostwriter:
+  main:
     name: ${{ matrix.config.os }}
     runs-on: ${{ matrix.config.os }}
 
