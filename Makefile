@@ -43,7 +43,7 @@ package: xbuild
 .PHONY: clean
 clean:
 	@rm -rf \
-		/tmp/ghostwriter-tests \
+		/tmp/$(PKGNAME)-tests \
 		build/ \
 		dist/ \
 		gw-rendered/
