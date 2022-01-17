@@ -28,8 +28,9 @@ jobs:
       run: make test
     - name: Package
       run: make package
-    - name: Pull Rhad image
+    - name: Use Docker
       uses: actions-hub/docker/cli@master
       env:
         SKIP_LOGIN: true
+    - name: Run Rhad
       run: 'docker run --rm -it -v ${PWD}:/root/src ghcr.io/opensourcecorp/rhadamanthus:latest .'
