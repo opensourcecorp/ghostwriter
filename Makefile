@@ -11,8 +11,8 @@ test:
 
 .PHONY: build
 build: clean
-	@go build -o build/$(BINNAME)
-
+	@mkdir -p build/$$(go env GOOS)-$$(go env GOARCH)
+	@go build -o build/$$(go env GOOS)-$$(go env GOARCH)/$(BINNAME)
 .PHONY: xbuild
 xbuild: clean
 	@for target in \
