@@ -33,4 +33,4 @@ jobs:
       env:
         SKIP_LOGIN: true
     - name: Run Rhad
-      run: 'docker run --rm -v ${PWD}:/root/src ghcr.io/opensourcecorp/rhadamanthus:latest .'
+      run: 'docker run --rm -v "${PWD}":/root/src ghcr.io/opensourcecorp/rhadamanthus:latest .'
