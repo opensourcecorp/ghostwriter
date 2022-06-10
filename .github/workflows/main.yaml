@@ -20,6 +20,23 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - name: Super-Linter
+      uses: github/super-linter/slim@v4
+      # Setting these to match what is run locally, even though I'm sure the GH
+      # people would frown on that
+      env:
+        RUN_LOCAL: true
+        USE_FIND_ALGORITHM: true
+        IGNORE_GITIGNORED_FILES: true
+        FILTER_REGEX_EXCLUDE: testdata.*
+        VALIDATE_GO: false
+        VALIDATE_NATURAL_LANGUAGE: false
+    - name: Use Docker
+      uses: actions-hub/docker/cli@master
+      env:
+        SKIP_LOGIN: true
+    - name: Rhad lint
+      run: 'docker run --rm -v "${PWD}":/home/rhad/src ghcr.io/opensourcecorp/rhad:latest lint'
     - uses: actions/setup-go@v2
       with:
         stable: false
@@ -28,9 +45,3 @@ jobs:
       run: make test
     - name: Package
       run: make package
-    - name: Use Docker
-      uses: actions-hub/docker/cli@master
-      env:
-        SKIP_LOGIN: true
-    - name: Run Rhad
-      run: 'docker run --rm -v "${PWD}":/home/rhad/src ghcr.io/opensourcecorp/rhad:latest lint'
